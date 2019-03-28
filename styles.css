@@ -2,8 +2,9 @@ html, body {
     padding: 0;
     margin: 0;
 }
-canvas {
+#gameCanvas {
     background: #eee;
     display: block;
     margin: 0 auto;
+    transition: background-color 1.3s linear;
 }

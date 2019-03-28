@@ -1,9 +1,11 @@
+// TODO: make enemies move randomly and implement hierarchy for absorbing
+
 let canvas = document.getElementById('gameCanvas');
 let ctx = canvas.getContext('2d');
 
 class Ball
 {
-    constructor(x, y, r, speed, color, id)
+    constructor(x, y, r, speed, color)
     {
         this.x = x;
         this.y = y;
@@ -14,7 +16,6 @@ class Ball
         this.uP = null;
         this.lP = null;
         this.rP = null;
-        this.id = id;
     }
 }
 
@@ -23,45 +24,68 @@ function main()
     // create player ball
     let midX = window.innerWidth / 2;
     let midY = window.innerHeight / 2;
-    let player = new Ball(midX, midY, 10, 7, 'tomato', 0);
+    let player = new Ball(midX, midY, 10, 7, 'tomato');
 
     setCanvasSize();
     attachListeners(player);
 
     // generate enemies
     let enemies = [];
-    let enemyGenInterval = 2000;
-    let enemyId = 1;
-    setInterval(() => {
-        // create enemy ball
-        let attr = getRandomAttributes(player);
-        enemies.push(new Ball(attr.x, attr.y, attr.r, attr.speed, 'blue', enemyId));
-        enemyId++;
-    }, enemyGenInterval);
+    generateEnemies(enemies, player);
 
-    // draw loop
+    // draw/game loop
+    let start = Date.now();
     function loop ()
     {
+        transitionBackground(start);
+
         // clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         drawPlayer(player);
-        drawEnemies(enemies, player);
+        let gameOver = drawEnemies(enemies, player);
         movePlayer(player);
-        window.requestAnimationFrame(loop);
+        moveEnemies(enemies);
+
+        if (!gameOver) {
+            window.requestAnimationFrame(loop);
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('gameCanvas').style.backgroundColor = '#000';
+        }
     }
     window.requestAnimationFrame(loop);
 }
 
 main();
 
+function transitionBackground(start)
+{
+    let now = Date.now();
+    let elapsed = Math.floor((now - start) / 1000);
+    if (elapsed % 10 === 0) { // change color every 10 seconds
+        let randomColor = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+        document.getElementById('gameCanvas').style.backgroundColor = randomColor;
+    }
+}
+
+function generateEnemies(enemies, player)
+{
+    let enemyGenInterval = 2000;
+    setInterval(() => {
+        // create enemy ball
+        let attr = getRandomAttributes(player);
+        enemies.push(new Ball(attr.x, attr.y, attr.r, attr.speed, 'blue'));
+    }, enemyGenInterval);
+}
+
 // returns random attributes scaled to a player
 function getRandomAttributes(player)
 {
     let x = getRandomInt(0, window.innerWidth);
     let y = getRandomInt(0, window.innerHeight);
-    let r = getRandomInt(player.r / 2, player.r * 2);
-    let speed = getRandomInt(player.speed / 2, player.speed * 2);
+    let r = getRandomInt(player.r / 2, player.r * 1.5);
+    let speed = getRandomInt(player.speed / 2, player.speed * 1.5);
     return {
         x: x,
         y: y,
@@ -75,7 +99,7 @@ function drawPlayer(player)
     draw(player);
 }
 
-// create an enemy ball
+// draw the enemies and handle collisions
 function drawEnemies(enemies, player)
 {
     if (enemies === []) {
@@ -85,14 +109,30 @@ function drawEnemies(enemies, player)
     {
         let e = enemies[i];
         if (circleCollision(player, e)) {
-            // TODO: make deletion depend on radii
-            // remove enemy from enemies array, increase radius size
-            let index = enemies.indexOf(e);
-            enemies.splice(index, 1);
-            player.r += Math.floor(e.r / 2);
+            if (player.r >= e.r) {
+                // remove enemy from enemies array, increase radius size
+                let index = enemies.indexOf(e);
+                enemies.splice(index, 1);
+                player.r += Math.floor(e.r / 10);
+                return false; // whether we lost
+            } else {
+                // player dies
+                return true; // whether we lost
+            }
         } else {
             draw(e);
         }
+    }
+}
+
+function moveEnemies(enemies)
+{
+    // TODO: HAVE WEIGHTED RANDOMNESS FOR MOVEMENT
+    for (let i = 0; i < enemies.length; i++)
+    {
+        let e = enemies[i];
+        generateRandomKeypress(e);
+        movePlayer(e);
     }
 }
 
@@ -111,6 +151,19 @@ function movePlayer(player)
     if (player.rP) {
         player.x + delta + player.r <= canvas.width ? player.x += delta : player.x = canvas.width - player.r;
     }
+}
+
+function generateRandomKeypress(ball)
+{
+    ball.dP = randomBool();
+    ball.uP = randomBool();
+    ball.lP = randomBool();
+    ball.rP = randomBool();
+}
+
+function randomBool()
+{
+    return Math.random() < 0.5;
 }
 
 function draw(ball)
