@@ -62,7 +62,7 @@ function transitionBackground(start)
     let now = Date.now();
     let elapsed = Math.floor((now - start) / 1000);
     if (elapsed % 15 === 0 && elapsed !== 0) { // change color every 10 seconds
-        let randomColor = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+        let randomColor = '#'+(0x1000000+(Math.random() * 0.5)*0xffffff).toString(16).substr(1,6);
         document.getElementById('gameCanvas').style.backgroundColor = randomColor;
     }
 }
