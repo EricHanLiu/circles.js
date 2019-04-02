@@ -1,5 +1,6 @@
 let canvas = document.getElementById('gameCanvas');
 let ctx = canvas.getContext('2d');
+let score = 0;
 
 class Ball
 {
@@ -22,7 +23,9 @@ function main()
     // create player ball
     let midX = window.innerWidth / 2;
     let midY = window.innerHeight / 2;
-    let player = new Ball(midX, midY, 10, 7, 'tomato');
+    let playerRadius = 7;
+    let playerSpeed = 7;
+    let player = new Ball(midX, midY, playerRadius, playerSpeed, 'tomato');
 
     setCanvasSize();
     attachListeners(player);
@@ -31,11 +34,13 @@ function main()
     let enemies = [];
     generateEnemies(enemies, player);
 
+    let colorStack = ['#FEB2A2', '#C78F84', '#ECA126', '#3AF7EF', '#2D86FF', '#C4A8F8', '#FFD100'];
+
     // draw/game loop
     let start = Date.now();
     function loop ()
     {
-        transitionBackground(start);
+        score = transitionBackground(start, colorStack);
 
         // clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -49,6 +54,11 @@ function main()
             window.requestAnimationFrame(loop);
         } else {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "24px Arial";
+            ctx.fillStyle = "aqua";
+            ctx.textAlign = "center";
+            ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 15);
+            ctx.fillText("Your final score was: " + score, canvas.width / 2, canvas.height / 2 + 15);
             document.getElementById('gameCanvas').style.backgroundColor = '#000';
         }
     }
@@ -57,14 +67,25 @@ function main()
 
 main();
 
-function transitionBackground(start)
+function drawScore(score)
+{
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("Score: " + score, 8, 20);
+}
+
+function transitionBackground(start, colorStack)
 {
     let now = Date.now();
     let elapsed = Math.floor((now - start) / 1000);
-    if (elapsed % 15 === 0 && elapsed !== 0) { // change color every 10 seconds
-        let randomColor = '#'+(0x1000000+(Math.random() * 0.5)*0xffffff).toString(16).substr(1,6);
-        document.getElementById('gameCanvas').style.backgroundColor = randomColor;
+    score = elapsed;
+    if (elapsed % 20 === 0 && elapsed !== 0) { // change color every 10 seconds
+        document.getElementById('gameCanvas').style.backgroundColor = colorStack[0];
+        colorStack.push(colorStack.pop()); // cycle
     }
+
+    // to update score
+    return Math.floor((now - start) / 100);
 }
 
 function generateEnemies(enemies, player)
@@ -83,7 +104,7 @@ function getRandomAttributes(player)
     let x = getRandomInt(0, window.innerWidth);
     let y = getRandomInt(0, window.innerHeight);
     // size based on player radius
-    let r = getRandomInt(player.r / 2, player.r * 1.5);
+    let r = getRandomInt(player.r / 4, player.r * 1.5);
     let radiusRatio = r / player.r;
     let speed = Math.floor((1 / radiusRatio) * getRandomInt(2, player.speed)); // speed based on comparative radius
     return {
@@ -190,6 +211,8 @@ function draw(ball)
     ctx.fillStyle = ball.color;
     ctx.fill();
     ctx.closePath();
+
+    drawScore(score);
 }
 
 function setCanvasSize()
