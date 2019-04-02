@@ -1,4 +1,4 @@
-// TODO: make enemies move randomly and implement hierarchy for absorbing
+// TODO: make enemy movement directed and weighted based on size
 
 let canvas = document.getElementById('gameCanvas');
 let ctx = canvas.getContext('2d');
@@ -10,7 +10,7 @@ class Ball
         this.x = x;
         this.y = y;
         this.r = r;
-        this.speed = speed
+        this.speed = speed;
         this.color = color;
         this.dP = null;
         this.uP = null;
@@ -45,7 +45,7 @@ function main()
         drawPlayer(player);
         let gameOver = drawEnemies(enemies, player);
         movePlayer(player);
-        moveEnemies(enemies);
+        moveEnemies(enemies, player);
 
         if (!gameOver) {
             window.requestAnimationFrame(loop);
@@ -63,7 +63,7 @@ function transitionBackground(start)
 {
     let now = Date.now();
     let elapsed = Math.floor((now - start) / 1000);
-    if (elapsed % 10 === 0) { // change color every 10 seconds
+    if (elapsed % 15 === 0 && elapsed !== 0) { // change color every 10 seconds
         let randomColor = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
         document.getElementById('gameCanvas').style.backgroundColor = randomColor;
     }
@@ -84,8 +84,10 @@ function getRandomAttributes(player)
 {
     let x = getRandomInt(0, window.innerWidth);
     let y = getRandomInt(0, window.innerHeight);
+    // size based on player radius
     let r = getRandomInt(player.r / 2, player.r * 1.5);
-    let speed = getRandomInt(player.speed / 2, player.speed * 1.5);
+    let radiusRatio = r / player.r;
+    let speed = Math.floor((1 / radiusRatio) * getRandomInt(1, player.speed)); // speed based on comparative radius
     return {
         x: x,
         y: y,
@@ -125,13 +127,15 @@ function drawEnemies(enemies, player)
     }
 }
 
-function moveEnemies(enemies)
+function moveEnemies(enemies, player)
 {
-    // TODO: HAVE WEIGHTED RANDOMNESS FOR MOVEMENT
     for (let i = 0; i < enemies.length; i++)
     {
         let e = enemies[i];
-        generateRandomKeypress(e);
+        // janky way to only do 25% of time
+        if (Math.random() > 0.75) {
+            generateRandomKeypress(e, player);
+        }
         movePlayer(e);
     }
 }
@@ -153,17 +157,32 @@ function movePlayer(player)
     }
 }
 
-function generateRandomKeypress(ball)
+function generateRandomKeypress(enemy, player)
 {
-    ball.dP = randomBool();
-    ball.uP = randomBool();
-    ball.lP = randomBool();
-    ball.rP = randomBool();
+    let enemyBigger = enemy.r > player.r;
+    let wantMoveRight = enemy.x < player.x;
+    let wantMoveDown = enemy.y < player.y;
+
+    if (enemyBigger) { // move towards player
+        enemy.uP = weightedBool(!wantMoveDown);
+        enemy.dP = weightedBool(wantMoveDown);
+        enemy.lP = weightedBool(!wantMoveRight);
+        enemy.rP = weightedBool(wantMoveRight);
+    } else { // move away from player
+        enemy.uP = weightedBool(wantMoveDown);
+        enemy.dP = weightedBool(!wantMoveDown);
+        enemy.lP = weightedBool(wantMoveRight);
+        enemy.rP = weightedBool(!wantMoveRight);
+    }
 }
 
-function randomBool()
+function weightedBool(weigh)
 {
-    return Math.random() < 0.5;
+    // returns true weighted based on input ratio
+    if (weigh) {
+        return Math.random() < 0.8;
+    }
+    return Math.random() < 0.2;
 }
 
 function draw(ball)
