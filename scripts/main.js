@@ -1,5 +1,3 @@
-// TODO: make enemy movement directed and weighted based on size
-
 let canvas = document.getElementById('gameCanvas');
 let ctx = canvas.getContext('2d');
 
@@ -87,7 +85,7 @@ function getRandomAttributes(player)
     // size based on player radius
     let r = getRandomInt(player.r / 2, player.r * 1.5);
     let radiusRatio = r / player.r;
-    let speed = Math.floor((1 / radiusRatio) * getRandomInt(1, player.speed)); // speed based on comparative radius
+    let speed = Math.floor((1 / radiusRatio) * getRandomInt(2, player.speed)); // speed based on comparative radius
     return {
         x: x,
         y: y,
