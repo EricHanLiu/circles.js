@@ -34,7 +34,7 @@ function main()
     let enemies = [];
     generateEnemies(enemies, player);
 
-    let colorStack = ['#FEB2A2', '#C78F84', '#ECA126', '#3AF7EF', '#2D86FF', '#C4A8F8', '#FFD100'];
+    let colorStack = ['#FEB2A2', '#ec918c', '#3af7ef', '#ff894f', '#C4A8F8', '#FFD100'];
 
     // draw/game loop
     let start = Date.now();
@@ -81,7 +81,8 @@ function transitionBackground(start, colorStack)
     score = elapsed;
     if (elapsed % 20 === 0 && elapsed !== 0) { // change color every 10 seconds
         document.getElementById('gameCanvas').style.backgroundColor = colorStack[0];
-        colorStack.push(colorStack.pop()); // cycle
+        colorStack.unshift(colorStack.pop()); // cycle
+        console.log(colorStack);
     }
 
     // to update score
@@ -90,21 +91,28 @@ function transitionBackground(start, colorStack)
 
 function generateEnemies(enemies, player)
 {
-    let enemyGenInterval = 2000;
+    let enemyGenInterval = 1500;
     setInterval(() => {
         // create enemy ball
         let attr = getRandomAttributes(player);
-        enemies.push(new Ball(attr.x, attr.y, attr.r, attr.speed, 'blue'));
+        enemies.push(new Ball(attr.x, attr.y, attr.r, attr.speed, 'purple'));
     }, enemyGenInterval);
 }
 
 // returns random attributes scaled to a player
 function getRandomAttributes(player)
 {
-    let x = getRandomInt(0, window.innerWidth);
-    let y = getRandomInt(0, window.innerHeight);
+    // get x away from player
+    let x1 = getRandomInt(0, Math.max(0, player.x - 200));
+    let x2 = getRandomInt(Math.min(player.x + 200, window.innerWidth), window.innerWidth);
+    let x = Math.random() > 0.5 ? x1 : x2;
+
+    let y1 = getRandomInt(0, Math.max(0, player.y - 100));
+    let y2 = getRandomInt(Math.min(player.y + 100, window.innerHeight), window.innerHeight);
+    let y = Math.random() > 0.5 ? y1 : y2;
+
     // size based on player radius
-    let r = getRandomInt(player.r / 4, player.r * 1.5);
+    let r = getRandomInt(player.r / 2, player.r * 1.5);
     let radiusRatio = r / player.r;
     let speed = Math.floor((1 / radiusRatio) * getRandomInt(2, player.speed)); // speed based on comparative radius
     return {
@@ -134,7 +142,8 @@ function drawEnemies(enemies, player)
                 // remove enemy from enemies array, increase radius size
                 let index = enemies.indexOf(e);
                 enemies.splice(index, 1);
-                player.r += Math.floor(e.r / 10);
+                // increment by 1 randomly, scaling down from 50%
+                player.r += Math.random() > (0.5 + e.r / 400) ? 1 : 0;
                 return false; // whether we lost
             } else {
                 // player dies
@@ -151,7 +160,7 @@ function moveEnemies(enemies, player)
     for (let i = 0; i < enemies.length; i++)
     {
         let e = enemies[i];
-        // janky way to only do 25% of time
+        // janky way to only do 15% of time
         if (Math.random() > 0.75) {
             generateRandomKeypress(e, player);
         }
@@ -262,4 +271,9 @@ function getRandomInt(min, max)
 function circleCollision(c1, c2)
 {
     return (Math.pow(c2.x - c1.x, 2) + Math.pow(c1.y - c2.y, 2) <= Math.pow(c1.r + c2.r, 2));
+}
+
+function between(x, min, max)
+{
+    return x >= min && x <= max;
 }
