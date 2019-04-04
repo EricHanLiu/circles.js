@@ -57,12 +57,23 @@ function main()
             ctx.font = "24px Arial";
             ctx.fillStyle = "aqua";
             ctx.textAlign = "center";
-            ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 15);
-            ctx.fillText("Your final score was: " + score, canvas.width / 2, canvas.height / 2 + 15);
+            ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 30);
+            ctx.fillText("Your final score was: " + score, canvas.width / 2, canvas.height / 2);
+            ctx.fillText("Press SPACE to play again", canvas.width / 2, canvas.height / 2 + 30);
+            document.addEventListener('keypress', newGameListener);
             document.getElementById('gameCanvas').style.backgroundColor = '#000';
         }
     }
     window.requestAnimationFrame(loop);
+}
+
+function newGameListener(e)
+{
+    if (e.key === ' ') {
+        document.removeEventListener('keypress', newGameListener);
+        document.getElementById('gameCanvas').style.backgroundColor = '#eee';
+        main();
+    }
 }
 
 main();
@@ -82,7 +93,6 @@ function transitionBackground(start, colorStack)
     if (elapsed % 20 === 0 && elapsed !== 0) { // change color every 10 seconds
         document.getElementById('gameCanvas').style.backgroundColor = colorStack[0];
         colorStack.unshift(colorStack.pop()); // cycle
-        console.log(colorStack);
     }
 
     // to update score
@@ -95,21 +105,37 @@ function generateEnemies(enemies, player)
     setInterval(() => {
         // create enemy ball
         let attr = getRandomAttributes(player);
-        enemies.push(new Ball(attr.x, attr.y, attr.r, attr.speed, 'purple'));
+        let color;
+        if (attr.r > player.r) {
+            color = 'midnightblue';
+        } else {
+            color = 'lime';
+        }
+        enemies.push(new Ball(attr.x, attr.y, attr.r, attr.speed, color));
     }, enemyGenInterval);
 }
 
 // returns random attributes scaled to a player
 function getRandomAttributes(player)
 {
-    // get x away from player
-    let x1 = getRandomInt(0, Math.max(0, player.x - 200));
-    let x2 = getRandomInt(Math.min(player.x + 200, window.innerWidth), window.innerWidth);
+    let w = canvas.width;
+    let h = canvas.height;
+    // make sure x doesn't generate too close to player
+    let x1 = getRandomInt(0, player.x - 100);
+    let x2 = getRandomInt(player.x + 100, w);
     let x = Math.random() > 0.5 ? x1 : x2;
+    if (player.x - 100 < 0) // if player close to left wall, generate on right half
+        x = x2;
+    else
+        x = x1;
 
-    let y1 = getRandomInt(0, Math.max(0, player.y - 100));
-    let y2 = getRandomInt(Math.min(player.y + 100, window.innerHeight), window.innerHeight);
+    let y1 = getRandomInt(0, player.y - 100);
+    let y2 = getRandomInt(player.y + 100, h);
     let y = Math.random() > 0.5 ? y1 : y2;
+    if (player.y - 100 < 0)
+        y = y2;
+    else
+        y = y1;
 
     // size based on player radius
     let r = getRandomInt(player.r / 2, player.r * 1.5);
@@ -142,14 +168,17 @@ function drawEnemies(enemies, player)
                 // remove enemy from enemies array, increase radius size
                 let index = enemies.indexOf(e);
                 enemies.splice(index, 1);
-                // increment by 1 randomly, scaling down from 50%
-                player.r += Math.random() > (0.5 + e.r / 400) ? 1 : 0;
+                // increase by 10% percent of enemy radius, by decreasing chance (based on your radius)
+                player.r += Math.random() < (4 / player.r) ? (e.r / 10) : 0;
                 return false; // whether we lost
             } else {
                 // player dies
                 return true; // whether we lost
             }
         } else {
+            if (e.r <= player.r) {
+                e.color = 'lime';
+            }
             draw(e);
         }
     }
@@ -191,22 +220,38 @@ function generateRandomKeypress(enemy, player)
     let wantMoveRight = enemy.x < player.x;
     let wantMoveDown = enemy.y < player.y;
 
+    let w = canvas.width;
+    let h = canvas.height;
+
     if (enemyBigger) { // move towards player
         enemy.uP = weightedBool(!wantMoveDown);
         enemy.dP = weightedBool(wantMoveDown);
         enemy.lP = weightedBool(!wantMoveRight);
         enemy.rP = weightedBool(wantMoveRight);
     } else { // move away from player
-        enemy.uP = weightedBool(wantMoveDown);
-        enemy.dP = weightedBool(!wantMoveDown);
-        enemy.lP = weightedBool(wantMoveRight);
-        enemy.rP = weightedBool(!wantMoveRight);
+        // if enemy is near edges, don't move away from player (prevents getting stuck in corners)
+        if (enemy.y < 200)
+            enemy.uP = Math.random() < 0.2;
+        else
+            enemy.uP = weightedBool(wantMoveDown);
+        if (enemy.y > h - 200)
+            enemy.dP = Math.random() < 0.2;
+        else
+            enemy.dP = weightedBool(!wantMoveDown);
+        if (enemy.x < 200)
+            enemy.lP = Math.random() < 0.2;
+        else
+            enemy.lP = weightedBool(wantMoveRight);
+        if (enemy.x > w - 200)
+            enemy.rP = Math.random() < 0.2;
+        else
+            enemy.rP = weightedBool(!wantMoveRight);
     }
 }
 
 function weightedBool(weigh)
 {
-    // returns true weighted based on input ratio
+    // returns true weighted based on input bool
     if (weigh) {
         return Math.random() < 0.8;
     }
