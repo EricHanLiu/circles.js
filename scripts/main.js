@@ -20,6 +20,7 @@ class Ball
 
 function main()
 {
+    document.getElementById('gameCanvas').style.backgroundColor = '#eee';
     // create player ball
     let midX = window.innerWidth / 2;
     let midY = window.innerHeight / 2;
@@ -27,8 +28,8 @@ function main()
     let playerSpeed = 7;
     let player = new Ball(midX, midY, playerRadius, playerSpeed, 'tomato');
 
-    setCanvasSize();
     attachListeners(player);
+    setCanvasSize();
 
     // generate enemies
     let enemies = [];
@@ -53,15 +54,7 @@ function main()
         if (!gameOver) {
             window.requestAnimationFrame(loop);
         } else {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = "24px Arial";
-            ctx.fillStyle = "aqua";
-            ctx.textAlign = "center";
-            ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 30);
-            ctx.fillText("Your final score was: " + score, canvas.width / 2, canvas.height / 2);
-            ctx.fillText("Press SPACE to play again", canvas.width / 2, canvas.height / 2 + 30);
-            document.addEventListener('keypress', newGameListener);
-            document.getElementById('gameCanvas').style.backgroundColor = '#000';
+            drawGameOver();
         }
     }
     window.requestAnimationFrame(loop);
@@ -76,11 +69,38 @@ function newGameListener(e)
     }
 }
 
-main();
+drawIntro();
+
+function drawIntro()
+{
+    setCanvasSize();
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.font = "50px Raleway";
+    ctx.fillText("Circles.js", canvas.width / 2, canvas.height / 2 - 70);
+    ctx.font = "24px Raleway";
+    ctx.fillText("Move with WASD or arrow keys", canvas.width / 2, canvas.height / 2 - 30);
+    ctx.fillText("Collect the green & avoid the purple", canvas.width / 2, canvas.height / 2);
+    ctx.fillText("Press SPACE to play", canvas.width / 2, canvas.height / 2 + 30);
+    document.addEventListener('keypress', newGameListener);
+}
+
+function drawGameOver()
+{
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = "24px Raleway";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 30);
+    ctx.fillText("Your final score was: " + score, canvas.width / 2, canvas.height / 2);
+    ctx.fillText("Press SPACE to play again", canvas.width / 2, canvas.height / 2 + 30);
+    document.addEventListener('keypress', newGameListener);
+    document.getElementById('gameCanvas').style.backgroundColor = '#500';
+}
 
 function drawScore(score)
 {
-    ctx.font = "16px Arial";
+    ctx.font = "16px Raleway";
     ctx.fillStyle = "#0095DD";
     ctx.fillText("Score: " + score, 8, 20);
 }
