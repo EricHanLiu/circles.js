@@ -25,7 +25,7 @@ function main()
     let midX = window.innerWidth / 2;
     let midY = window.innerHeight / 2;
     let playerRadius = 7;
-    let playerSpeed = 7;
+    let playerSpeed = 6;
     let player = new Ball(midX, midY, playerRadius, playerSpeed, 'tomato');
 
     attachListeners(player);
@@ -35,7 +35,7 @@ function main()
     let enemies = [];
     generateEnemies(enemies, player);
 
-    let colorStack = ['#FEB2A2', '#ec918c', '#3af7ef', '#ff894f', '#C4A8F8', '#FFD100'];
+    let colorStack = ['#ec918c', '#3af7ef', '#ff894f', '#C4A8F8', '#FFD100'];
 
     // draw/game loop
     let start = Date.now();
@@ -131,6 +131,12 @@ function generateEnemies(enemies, player)
         } else {
             color = 'lime';
         }
+        // golden snitch enemy 3% of time, hard to catch
+        if (Math.random() > 0.97) {
+            attr.r = 4;
+            attr.speed = player.speed * 2;
+            color = 'pink';
+        }
         enemies.push(new Ball(attr.x, attr.y, attr.r, attr.speed, color));
     }, enemyGenInterval);
 }
@@ -141,18 +147,18 @@ function getRandomAttributes(player)
     let w = canvas.width;
     let h = canvas.height;
     // make sure x doesn't generate too close to player
-    let x1 = getRandomInt(0, player.x - 100);
-    let x2 = getRandomInt(player.x + 100, w);
+    let x1 = getRandomInt(0, player.x - 200);
+    let x2 = getRandomInt(player.x + 200, w);
     let x = Math.random() > 0.5 ? x1 : x2;
-    if (player.x - 100 < 0) // if player close to left wall, generate on right half
+    if (player.x - 200 < 0) // if player close to left wall, generate on right half
         x = x2;
     else
         x = x1;
 
-    let y1 = getRandomInt(0, player.y - 100);
-    let y2 = getRandomInt(player.y + 100, h);
+    let y1 = getRandomInt(0, player.y - 200);
+    let y2 = getRandomInt(player.y + 200, h);
     let y = Math.random() > 0.5 ? y1 : y2;
-    if (player.y - 100 < 0)
+    if (player.y - 200 < 0)
         y = y2;
     else
         y = y1;
@@ -160,7 +166,8 @@ function getRandomAttributes(player)
     // size based on player radius
     let r = getRandomInt(player.r / 2, player.r * 1.5);
     let radiusRatio = r / player.r;
-    let speed = Math.floor((1 / radiusRatio) * getRandomInt(2, player.speed)); // speed based on comparative radius
+    // speed based on comparative radius
+    let speed = Math.floor((1 / radiusRatio) * getRandomInt(2, player.speed)); 
     return {
         x: x,
         y: y,
@@ -188,15 +195,20 @@ function drawEnemies(enemies, player)
                 // remove enemy from enemies array, increase radius size
                 let index = enemies.indexOf(e);
                 enemies.splice(index, 1);
-                // increase by 10% percent of enemy radius, by decreasing chance (based on your radius)
-                player.r += Math.random() < (4 / player.r) ? (e.r / 10) : 0;
+                if (e.color === 'pink') { // snitch caught, increase speed
+                    player.speed += 1;
+                } else { 
+                    // increase by 10% percent of enemy radius, 
+                    // by decreasing chance (based on your radius)
+                    player.r += Math.random() < (4 / player.r) ? (e.r / 10) : 0;
+                }
                 return false; // whether we lost
             } else {
                 // player dies
                 return true; // whether we lost
             }
         } else {
-            if (e.r <= player.r) {
+            if (e.r <= player.r && e.color != 'pink') {
                 e.color = 'lime';
             }
             draw(e);
@@ -209,7 +221,7 @@ function moveEnemies(enemies, player)
     for (let i = 0; i < enemies.length; i++)
     {
         let e = enemies[i];
-        // janky way to only do 15% of time
+        // janky way to only do 25% of time
         if (Math.random() > 0.75) {
             generateRandomKeypress(e, player);
         }
