@@ -35,13 +35,14 @@ function main()
     let enemies = [];
     generateEnemies(enemies, player);
 
-    let colorStack = ['#ec918c', '#3af7ef', '#ff894f', '#C4A8F8', '#FFD100'];
+    let colorStack = ['#FF9E9E', '#F96161', '#FA8728', '#D47DD7'];
 
     // draw/game loop
     let start = Date.now();
+    let set = [true];
     function loop ()
     {
-        score = transitionBackground(start, colorStack);
+        score = transitionBackground(start, colorStack, set);
 
         // clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -105,14 +106,19 @@ function drawScore(score)
     ctx.fillText("Score: " + score, 8, 20);
 }
 
-function transitionBackground(start, colorStack)
+function transitionBackground(start, colorStack, set)
 {
     let now = Date.now();
     let elapsed = Math.floor((now - start) / 1000);
     score = elapsed;
-    if (elapsed % 20 === 0 && elapsed !== 0) { // change color every 10 seconds
+    if (elapsed !== 0 && elapsed % 30 === 0 && set[0]) { // change every 30 seconds
         document.getElementById('gameCanvas').style.backgroundColor = colorStack[0];
-        colorStack.unshift(colorStack.pop()); // cycle
+        colorStack.unshift(colorStack.pop());
+        set[0] = false;
+    }
+    // really janky way to avoid game loop shifting colorStack
+    if (elapsed % 28 === 0) { 
+        set[0] = true;
     }
 
     // to update score
@@ -134,7 +140,7 @@ function generateEnemies(enemies, player)
         // golden snitch enemy 3% of time, hard to catch
         if (Math.random() > 0.97) {
             attr.r = 4;
-            attr.speed = player.speed * 2;
+            attr.speed = player.speed * 1.5;
             color = 'pink';
         }
         enemies.push(new Ball(attr.x, attr.y, attr.r, attr.speed, color));
@@ -221,8 +227,8 @@ function moveEnemies(enemies, player)
     for (let i = 0; i < enemies.length; i++)
     {
         let e = enemies[i];
-        // janky way to only do 25% of time
-        if (Math.random() > 0.75) {
+        // janky way to only do 15% of time
+        if (Math.random() > 0.85) {
             generateRandomKeypress(e, player);
         }
         movePlayer(e);
