@@ -35,7 +35,7 @@ function main()
     let enemies = [];
     generateEnemies(enemies, player);
 
-    let colorStack = ['#FF9E9E', '#F96161', '#FA8728', '#D47DD7'];
+    let colorStack = ['#FF9E9E', '#82F8EA', '#FA8728', '#D47DD7', 'F34E8D', 'D4C6FC'];
 
     // draw/game loop
     let start = Date.now();
@@ -77,12 +77,12 @@ function drawIntro()
     setCanvasSize();
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
-    ctx.font = "50px Raleway";
-    ctx.fillText("Circles.js", canvas.width / 2, canvas.height / 2 - 70);
+    ctx.font = "100px Raleway";
+    ctx.fillText("Circles.js", canvas.width / 2, canvas.height / 2 - 100);
     ctx.font = "24px Raleway";
-    ctx.fillText("Move with WASD or arrow keys", canvas.width / 2, canvas.height / 2 - 30);
-    ctx.fillText("Collect the green & avoid the purple", canvas.width / 2, canvas.height / 2);
-    ctx.fillText("Press SPACE to play", canvas.width / 2, canvas.height / 2 + 30);
+    ctx.fillText("Move with WASD or arrow keys", canvas.width / 2, canvas.height / 2 - 10);
+    ctx.fillText("Collect the green & avoid the purple", canvas.width / 2, canvas.height / 2 + 20);
+    ctx.fillText("Press SPACE to play", canvas.width / 2, canvas.height / 2 + 50);
     document.addEventListener('keypress', newGameListener);
 }
 
@@ -96,7 +96,7 @@ function drawGameOver()
     ctx.fillText("Your final score was: " + score, canvas.width / 2, canvas.height / 2);
     ctx.fillText("Press SPACE to play again", canvas.width / 2, canvas.height / 2 + 30);
     document.addEventListener('keypress', newGameListener);
-    document.getElementById('gameCanvas').style.backgroundColor = '#500';
+    document.getElementById('gameCanvas').style.backgroundColor = '#AD65CF';
 }
 
 function drawScore(score)

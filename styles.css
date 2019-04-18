@@ -3,7 +3,7 @@ html, body {
     margin: 0;
 }
 #gameCanvas {
-    background: #500;
+    background: #AD65CF;
     display: block;
     margin: 0 auto;
     transition: background-color 1.3s linear;
