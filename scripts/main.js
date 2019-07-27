@@ -77,9 +77,9 @@ function drawIntro()
     setCanvasSize();
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
-    ctx.font = "100px Raleway";
+    ctx.font = "100px Rubik";
     ctx.fillText("Circles.js", canvas.width / 2, canvas.height / 2 - 100);
-    ctx.font = "24px Raleway";
+    ctx.font = "24px Rubik";
     ctx.fillText("Move with WASD or arrow keys", canvas.width / 2, canvas.height / 2 - 10);
     ctx.fillText("Collect the green & avoid the purple", canvas.width / 2, canvas.height / 2 + 20);
     ctx.fillText("Press SPACE to play", canvas.width / 2, canvas.height / 2 + 50);
@@ -89,7 +89,7 @@ function drawIntro()
 function drawGameOver()
 {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = "24px Raleway";
+    ctx.font = "24px Rubik";
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 30);
@@ -101,7 +101,7 @@ function drawGameOver()
 
 function drawScore(score)
 {
-    ctx.font = "16px Raleway";
+    ctx.font = "16px Rubik";
     ctx.fillStyle = "#0095DD";
     ctx.fillText("Score: " + score, 8, 20);
 }
