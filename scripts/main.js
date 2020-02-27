@@ -1,6 +1,8 @@
 let canvas = document.getElementById('gameCanvas');
 let ctx = canvas.getContext('2d');
 let score = 0;
+let DEFAULT_SPEED = 6,
+    DEFAULT_RADIUS = 7;
 
 class Ball
 {
@@ -24,8 +26,8 @@ function main()
     // create player ball
     let midX = window.innerWidth / 2;
     let midY = window.innerHeight / 2;
-    let playerRadius = 7;
-    let playerSpeed = 6;
+    let playerRadius = DEFAULT_RADIUS;
+    let playerSpeed = DEFAULT_SPEED;
     let player = new Ball(midX, midY, playerRadius, playerSpeed, 'tomato');
 
     attachListeners(player);
@@ -173,7 +175,7 @@ function getRandomAttributes(player)
     let r = getRandomInt(player.r / 2, player.r * 1.5);
     let radiusRatio = r / player.r;
     // speed based on comparative radius
-    let speed = Math.floor((1 / radiusRatio) * getRandomInt(2, player.speed)); 
+    let speed = Math.floor((1 / radiusRatio) * getRandomInt(2, DEFAULT_SPEED)); 
     return {
         x: x,
         y: y,
